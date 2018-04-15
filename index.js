@@ -3,6 +3,13 @@ var express = require('express');
 var twilio = require('twilio');
 var firebase = require("firebase");
 
+// Twilio Credentials
+const accountSid = 'AC158a18c88afd9974315afc095b5e5675';
+const authToken = '215b80a805b815ea08684fde29e7c1c8';
+
+// require the Twilio module and create a REST client
+const client = require('twilio')(accountSid, authToken);
+
 
 var app = express();
 
@@ -33,6 +40,36 @@ app.use(express.urlencoded()); // to support URL-encoded bodies
 app.get('/', function(req, res) {
 	res.sendfile('./index.html');
 })
+
+app.post('/alert', function(req, res) {
+
+	var safe = req.body.safe;
+	console.log(safe);
+
+	var message = "";
+	if (safe == "true") {
+		message = "Your contact is safe";
+	}
+	else {
+		message = "Your contact is not safe";
+	}
+
+
+	client.messages.create(
+	  {
+	    to: '+12672105999',
+	    from: '+18562724416',
+	    body: message,
+	  },
+	  (err, message) => {
+	    console.log(message.sid);
+	  }
+	);
+
+
+	console.log("text sent");
+
+});
 
 
 app.post('/register', function(req, res) {
