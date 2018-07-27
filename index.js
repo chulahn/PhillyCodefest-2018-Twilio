@@ -39,7 +39,29 @@ app.use(express.urlencoded()); // to support URL-encoded bodies
 
 app.get('/', function(req, res) {
 	res.sendfile('./index.html');
-})
+});
+
+app.get('/list', function(req, res) {
+	var a = database.ref('users/').orderByChild('time').limitToLast(1).once('value').then(function(snapshot) {
+		console.log(snapshot.val())
+		console.log(snapshot.val().johnsmith)
+		console.log(snapshot.val().johnsmith.number)
+
+		message = "Hola";
+		client.messages.create(
+		  {
+		    to: '+1' + snapshot.val().johnsmith.number,
+		    from: '+18562724416',
+		    body: message,
+		  },
+		  (err, message) => {
+		    console.log(message);
+		  }
+		);
+				
+	});
+	console.log(a);
+});
 
 app.post('/alert', function(req, res) {
 
@@ -47,12 +69,13 @@ app.post('/alert', function(req, res) {
 	console.log(safe);
 
 	var message = "";
-	if (safe == "true") {
-		message = "Your contact is safe";
+	if (safe) {
+		message = "I am in an active shooter situation.  I am safe right now, please don't worry.  The SAFE app has notified authorities.";
 	}
 	else {
-		message = "Your contact is not safe";
+		message = "I am in the active shooting zone.  I am NOT safe.  The SAFE app has notified authorities.";
 	}
+
 
 
 	client.messages.create(
@@ -77,10 +100,13 @@ app.post('/register', function(req, res) {
 	var username = req.body.username;
 	var fullname = req.body.fullname;
 	var phonenum = req.body.number;
+	var timeAdded = firebase.database.ServerValue.TIMESTAMP;
 
 	database.ref('users/' + username).set({
 	    name: fullname,
 	    number: phonenum,
+	    time: timeAdded,
+	    test: true
 	}).then(function() {
 		res.sendfile('./index.html')
 	});
